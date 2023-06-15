@@ -205,7 +205,7 @@ do
       echo '----------'  >> "${OUTPUT_FILE}" 
       echo ${SERVER}  >> "${OUTPUT_FILE}"
       echo '----------'  >> "${OUTPUT_FILE}" 
-      ${SSH_COMMAND}  >> "${OUTPUT_FILE}" 
+      ${SSH_COMMAND}  &>> "${OUTPUT_FILE}" 
       SSH_EXIT_STATUS="${?}"
 
       # Capture any non-zero exit status from the SSH_COMMAND and report to the user.
