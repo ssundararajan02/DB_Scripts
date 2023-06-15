@@ -107,7 +107,7 @@ do
   fi
   ping_status "${SERVER}"
 
-  SSH_COMMAND="sshpass -e ssh -tt ${SSH_OPTIONS} ${SSHUSER}@${SERVER} ${SUDO} ${COMMAND}"
+  SSH_COMMAND="sshpass -e ssh -q -tt ${SSH_OPTIONS} ${SSHUSER}@${SERVER} ${SUDO} ${COMMAND}"
  
   # If it's a dry run, don't execute anything, just echo it.
   if [[ "${DRY_RUN}" = 'true' ]]
