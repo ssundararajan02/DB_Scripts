@@ -13,10 +13,10 @@ SSH_OPTIONS='-o ConnectTimeout=2  -o PreferredAuthentications=keyboard-interacti
 
 usage() {
   # Display the usage and exit.
-  echo "Usage: ${0} [-nsv]  [-f FILE] -u username COMMAND" >&2
+  echo "Usage: ${0} [-dsv]  [-f FILE] -u username COMMAND" >&2
   echo 'Executes COMMAND as a single command on every server.' >&2
   echo "  -f FILE     Use FILE for the list of servers. Default: ${SERVER_LIST}." >&2
-  echo '  -n          Dry run mode. Display the COMMAND that would have been executed and exit.' >&2
+  echo '  -d          Dry run mode. Display the COMMAND that would have been executed and exit.' >&2
   echo '  -s          Execute the COMMAND using sudo on the remote server.' >&2
   echo '  -v          Verbose mode. Displays the server name before executing COMMAND.' >&2
   echo '  -u username Username for ssh' >&2
@@ -71,7 +71,7 @@ log()
 {
   DT="$(date +%Y%m%d.%H%M%S.%N)"
   local MESSAGE="${*}"
-  echo -e "${MESSAGE}" >> "${LOG_FILE}"
+  echo -e "${DT}.${MESSAGE}" >> "${LOG_FILE}"
 }
 
 #Write message to Error file
@@ -79,7 +79,7 @@ erorr_mesg()
 {
   DT="$(date +%Y%m%d.%H%M%S.%N)"
   local MESSAGE="${*}"
-  echo -e "${MESSAGE}" >> "${ERROR_FILE}"
+  echo -e "${DT}.${MESSAGE}" >> "${ERROR_FILE}"
 }
 
 #Write jobs status
@@ -87,18 +87,24 @@ job_status()
 {
   DT="$(date +%Y%m%d.%H%M%S.%N)"
   local MESSAGE="${*}"
-  echo -e "${MESSAGE}" >> "${JOB_STATUS}"
+  echo -e "${DT}.${MESSAGE}" >> "${JOB_STATUS}"
 }
 
 # Parse the options.
-while getopts u:f:ns:v OPTION
+while getopts u:f:dsv OPTION
 do
   case ${OPTION} in
     f) SERVER_LIST="${OPTARG}" ;;
-    n) DRY_RUN='true' ;;
+    d) 
+      log 'DRY-RUN is on'
+      DRY_RUN='true'
+      ;;
     s) SUDO='sudo' ;;
     u) SSHUSER="${OPTARG}" ;;
-    v) VERBOSE='true' ;;
+    v) 
+      log 'DRY-RUN is on'
+      VERBOSE='true'
+      ;;
     ?) usage ;;
   esac
 done
@@ -158,12 +164,13 @@ ping_status ()
     echo -e "${SERVER} Up."
     log "Server ${SERVER} is online"
     job_status "Server ${SERVER} is online"
+    return 0
   else
     echo -e "${SERVER} Down."
     log "Server ${SERVER} is offline"
     job_status "Server ${SERVER} is offline"
+    return 1
   fi
-  return ${?}
 }
   
 
@@ -175,12 +182,12 @@ for SERVER in $(cat ${SERVER_LIST})
 do
   if [[ "${VERBOSE}" = 'true' ]]
   then
-    log 'Verbose is on'
+    
     echo "${SERVER}"
     log "Executing the commands on server ${SERVER}"
   fi
   ping_status "${SERVER}"
-  if [[ "${?}" -ne 0 ]]
+  if [[ "${?}" -eq 0 ]]
   then
     SSH_COMMAND="sshpass -e ssh -q -tt ${SSH_OPTIONS} ${SSHUSER}@${SERVER} ${SUDO} ${COMMAND}"
   
@@ -194,7 +201,7 @@ do
     else
     
       log "On server ${SERVER} executing the commands  ${SSH_COMMAND}"
-      ${SSH_COMMAND}  &>> "${OUTPUT_FILE}" 
+      ${SSH_COMMAND}  >> "${OUTPUT_FILE}" 
       SSH_EXIT_STATUS="${?}"
 
       # Capture any non-zero exit status from the SSH_COMMAND and report to the user.
@@ -204,9 +211,10 @@ do
         echo "Execution on ${SERVER} failed." >&2
         log "Execution on ${SERVER} failed."
         job_status "Execution on ${SERVER} failed."
-      fi 
-      log "On server ${SERVER} executed sccessfully"
-      job_status "On server ${SERVER} executed sccessfully"
+      else
+        log "On server ${SERVER} executed sccessfully"
+        job_status "On server ${SERVER} executed sccessfully"
+      fi
 
     fi
   fi

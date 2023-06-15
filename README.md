@@ -1,4 +1,4 @@
-# Argus read-only user management tasks
+# DBA Shell scripts
 ##### For Oracle DBA
 Shell script **db_users_nonprod.sh** created to perform below L1/L2 tasks by DBAs in Argus Non-PROD Databases
 - Check user accounts status
