@@ -1,2 +1,4 @@
 *.log
 *.lst
+servers*
+remote_exec.*

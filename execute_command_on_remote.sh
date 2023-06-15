@@ -201,6 +201,10 @@ do
     else
     
       log "On server ${SERVER} executing the commands  ${SSH_COMMAND}"
+      echo ''  >> "${OUTPUT_FILE}" 
+      echo '----------'  >> "${OUTPUT_FILE}" 
+      echo ${SERVER}  >> "${OUTPUT_FILE}"
+      echo '----------'  >> "${OUTPUT_FILE}" 
       ${SSH_COMMAND}  >> "${OUTPUT_FILE}" 
       SSH_EXIT_STATUS="${?}"
 
