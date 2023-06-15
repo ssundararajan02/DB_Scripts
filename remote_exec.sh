@@ -14,7 +14,6 @@ usage() {
   echo '  -n          Dry run mode. Display the COMMAND that would have been executed and exit.' >&2
   echo '  -s          Execute the COMMAND using sudo on the remote server.' >&2
   echo '  -v          Verbose mode. Displays the server name before executing COMMAND.' >&2
-  echo '  -o          Add more ssh option if requried.' >&2
   echo '  -u username Username for ssh' >&2
   echo "Usage: ${0} -nv -u adm_dbuser -f new_host.lst uptime" >&2
   exit 1
@@ -32,18 +31,17 @@ type sshpass > /dev/null
 
 if [[ ${?} -ne 0 ]]
 then
-  echo -e'Install sshpass before proceeding\n To install sudo yum instal sshpass -y' >&2
+  echo -e'Install sshpass before proceeding\n To install sudo yum install sshpass -y' >&2
 fi
 
 # Parse the options.
-while getopts u:f:nos:v OPTION
+while getopts u:f:ns:v OPTION
 do
   case ${OPTION} in
     f) SERVER_LIST="${OPTARG}" ;;
     n) DRY_RUN='true' ;;
     s) SUDO='sudo' ;;
     u) SSHUSER="${OPTARG}" ;;
-    o) SSH_OPTIONS="${SSH_OPTIONS} ${OPTARG}" ;;
     v) VERBOSE='true' ;;
     ?) usage ;;
   esac
