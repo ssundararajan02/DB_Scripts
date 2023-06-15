@@ -4,7 +4,7 @@
 SERVER_LIST="servers.lst"
 
 # Options for the ssh command.
-SSH_OPTIONS='-o ConnectTimeout=2  -o PreferredAuthentications=keyboard-interactive -o PubkeyAuthentication=no -o StrictHostKeyChecking=no'
+SSH_OPTIONS='-o ConnectTimeout=2  -o PreferredAuthentications=keyboard-interactive -o PubkeyAuthentication=no -o StrictHostKeyChecking=no -o q'
 
 usage() {
   # Display the usage and exit.
