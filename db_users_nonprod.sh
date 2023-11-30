@@ -4,7 +4,7 @@
 #Description	:   Created for L1/L2 to automate Argus READ-ONLY User Creation and password reset
 #Args           :   None                                                                                       
 #Author       	:   Suresh Sundararajan
-#Email         	:   Suresh.sundararajan@gilead.com
+#Email         	:   
 #Created        :   06-June-2023
 #Usage          :   ./db_users_nonprod.sh [-ac] [-l PASSWORD_ENGTH] [-f USER_DDL.sql]
 #Usage          :   ./db_users_nonprod.sh -a -c -l 12 -f USER_DDL.sql]
