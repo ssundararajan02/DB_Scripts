@@ -1,6 +1,16 @@
-# DBA Shell scripts
-##### For Oracle DBA
-Shell script **db_users_nonprod.sh** created to perform below L1/L2 tasks by DBAs in Argus Non-PROD Databases
+# DB Scripts
+## _For Oracle DBA_
+
+This repo will be usefull for DBA purpose and following are the scripts with usage instruction
+
+1. Shell script for repedated L1/L2 task with partioal automation _**db_users_nonprod.sh**_
+2. Shell script to execute command on multiple remote host _**execute_command_on_remote.sh**_
+3. PL/SQL block to remediate tablespace fragmentation **test.sql**
+
+___
+>### _**db_users_nonprod.sh**_
+
+_**db_users_nonprod.sh**_ - Shell script perform below L1/L2 tasks by DBAs
 - Check user accounts status
 - Unlock user account
 - Reset user password
@@ -9,7 +19,7 @@ Shell script **db_users_nonprod.sh** created to perform below L1/L2 tasks by DBA
 - List database users
 - Gerenerate SYSTEM user passsword
 
-## Input Parameters
+##### Input Parameters
 Following optional parameter can be provided while running the script
 
 Instructions on how to use them when executing
@@ -22,17 +32,17 @@ Instructions on how to use them when executing
 | -f FILENAME.sql | Specify the user DDL script name |USER_DDL.sql|
 
 
-## Syntax
+##### Syntax
 
 Execute this script as oracle OS user after setting environment variables
 
 ```sh
-/oradba/ssuresh/scripts/db_users_nonprod.sh
-/oradba/ssuresh/scripts/db_users_nonprod.sh -ac -l 12
-/oradba/ssuresh/scripts/db_users_nonprod.sh -ac -l 12 -f FILENAME.sql
+db_users_nonprod.sh
+db_users_nonprod.sh -ac -l 12
+db_users_nonprod.sh -ac -l 12 -f FILENAME.sql
 ```
 
-## Pre-requsites when running the script
+##### Pre-requsites when running the script
 
 **Following steps should be password to execute the script**
 
@@ -43,7 +53,7 @@ Execute this script as oracle OS user after setting environment variables
 - Script should be executed in non-prod DBs only
 
 ```sh
- ~]$ /oradba/ssuresh/scripts/db_users_nonprod.sh
+ $ ./db_users_nonprod.sh
 2023-06-13.15:51:37 :-                  -------------
 2023-06-13.15:51:37 :-                  List All User
 2023-06-13.15:51:37 :-                  -------------
@@ -69,3 +79,6 @@ hostname@DBNAME >
 Enter your choice : 1
 
 ```
+___
+___
+
