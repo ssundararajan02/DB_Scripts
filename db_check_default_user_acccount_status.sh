@@ -3,6 +3,7 @@
 # A list of servers, one per line.
 SERVER_LIST='servers.lst'
 INV_SCRIPT='db_get_inventory.sql'
+TEMP_INV_SCRIPT='temp_inventory.sql'
 DT="$(date +%Y%m%d.%H%M%S)"
 LOG_FILE='remote_exec.log'
 ERROR_FILE='remote_exec.err'
@@ -76,22 +77,63 @@ echo $INV_DB_CONN
 # Get Inventory
 get_inventory()
 {
-DBSTAT=$($ORACLE_HOME/bin/sqlplus  -s "$INV_DB_CONN" << EOF
+DB_INV=$($ORACLE_HOME/bin/sqlplus -s  "$INV_DB_CONN" << EOF
 spool $SERVER_LIST
-@$INV_SCRIPT
+--@$INV_SCRIPT
+@$TEMP_INV_SCRIPT
+
 exit;
 EOF
 )
-# if [[ $? != 0 ]] ; then
-#     echo "Error in Getting DB Inventory" >> $log_file
-#    echo "---`date '+%Y%m%d_%H%M%S'`">> $log_file
-#    echo "---END">> $log_file
-#    echo "Error"
-# fi
+if [[ $? != 0 ]] ; then
+    echo "Error in Getting DB Inventory" >> $LOG_FILE
+   echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
+   echo "---END">> $LOG_FILE
+   echo "Error"
+fi
 
 }
 
+get_db_version()
+{
+TEMP_DB_CONN="$INV_DB_USER/$INV_DB_PASS@$TEMP_DB_TNS"
+DB_VERSION=$($ORACLE_HOME/bin/sqlplus  -s "$TEMP_DB_CONN" << EOF
+set pages 0 lin 200 feed off ver off head off echo off;
+SET TRIMOUT ON;
+SET TRIMSPOOL ON;
+select version from v\$instance;
+exit;
+EOF
+)
+if [[ $? != 0 ]] ; then
+    echo "Error in Getting DB Version" >> $LOG_FILE
+    echo "$DB_VERSION" >> $LOG_FILE
+   echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
+   echo "---END">> $LOG_FILE
+   echo "Error"
+else
+  echo $DB_VERSION
+fi
+}
 
 #Main
 #Get the PROD DB inventory
 get_inventory
+
+cat $SERVER_LIST | while read HOST; do
+    TEMP_DB_TNS=$(echo $HOST|awk '{print $1":"$3"/"$2}')
+    DB_VERSION=$(get_db_version)
+    if [[ "$DB_VERSION"  != 'Error' ]]; then 
+      echo "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION"
+      if [[ $(echo  "$DB_VERSION"|awk -F. '{print $1}') > 11 ]]; then
+        echo 'Oracle 12C and Above'
+      else
+        echo 'Oracle 11G and below'
+      fi
+    else
+      echo "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION"
+    fi
+
+done
+
+
