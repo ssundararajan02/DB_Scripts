@@ -11,6 +11,8 @@ OUTPUT_FILE='remote_exec.out'
 JOB_STATUS='servers.log'
 INV_DB_TNS='sjdbaodbprdn02.na.gilead.com:1521/APEXPRD'
 INV_DB_USER='GSCTCCS_SVC'
+ORA_11G_SCRIPT='ORA_11G.sql'
+ORA_12C_SCRIPT='ORA_12C.sql'
 #INV_DB_PASS='' # Password set it Unix env vairable based on script .pass.sh
 source .pass.sh
 
@@ -96,7 +98,7 @@ fi
 
 get_db_version()
 {
-TEMP_DB_CONN="$INV_DB_USER/$INV_DB_PASS@$TEMP_DB_TNS"
+# TEMP_DB_CONN="$INV_DB_USER/$INV_DB_PASS@$TEMP_DB_TNS"
 DB_VERSION=$($ORACLE_HOME/bin/sqlplus  -s "$TEMP_DB_CONN" << EOF
 set pages 0 lin 200 feed off ver off head off echo off;
 SET TRIMOUT ON;
@@ -116,20 +118,65 @@ else
 fi
 }
 
+11g_open_users()
+{
+# TEMP_DB_CONN="$INV_DB_USER/$INV_DB_PASS@$TEMP_DB_TNS"
+OPEN_USERS=$($ORACLE_HOME/bin/sqlplus  -s "$TEMP_DB_CONN" << EOF
+@$ORA_11G_SCRIPT
+exit;
+EOF
+)
+if [[ $? != 0 ]] ; then
+    echo "Error in Getting DB Version" >> $LOG_FILE
+    echo "$OPEN_USERS" >> $LOG_FILE
+    echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
+    echo "---END">> $LOG_FILE
+    echo "Error"
+else
+  echo $OPEN_USERS
+fi
+
+}
+
+12c_open_users()
+{
+# TEMP_DB_CONN="$INV_DB_USER/$INV_DB_PASS@$TEMP_DB_TNS"
+OPEN_USERS=$($ORACLE_HOME/bin/sqlplus  -s "$TEMP_DB_CONN" << EOF
+@$ORA_12C_SCRIPT
+exit;
+EOF
+)
+if [[ $? != 0 ]] ; then
+    echo "Error in Getting DB Version" >> $LOG_FILE
+    echo "$OPEN_USERS" >> $LOG_FILE
+    echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
+    echo "---END">> $LOG_FILE
+    echo "Error"
+else
+  echo $OPEN_USERS
+fi
+
+}
+
+
 #Main
 #Get the PROD DB inventory
 get_inventory
 
 cat $SERVER_LIST | while read HOST; do
     TEMP_DB_TNS=$(echo $HOST|awk '{print $1":"$3"/"$2}')
+    TEMP_DB_CONN="$INV_DB_USER/$INV_DB_PASS@$TEMP_DB_TNS"
     DB_VERSION=$(get_db_version)
     if [[ "$DB_VERSION"  != 'Error' ]]; then 
       echo "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION"
       if [[ $(echo  "$DB_VERSION"|awk -F. '{print $1}') > 11 ]]; then
         echo 'Oracle 12C and Above'
+        OPEN_USERS=$(12c_open_users)
       else
         echo 'Oracle 11G and below'
+        OPEN_USERS=$(11g_open_users)
       fi
+      echo "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION | $OPEN_USERS"
     else
       echo "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION"
     fi
