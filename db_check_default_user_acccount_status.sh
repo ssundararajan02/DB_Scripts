@@ -18,17 +18,44 @@ source .pass.sh
 
 usage() {
   # Display the usage and exit.
-  echo "Usage: ${0} [-dsv]  [-f FILE] -u username COMMAND" >&2
+  echo "Usage: ${0}  [-f FILE] [-u username] [-p password] [-t TNS_STRING]" >&2
   echo 'Executes COMMAND as a single command on every server.' >&2
-  echo "  -f FILE     Use FILE for the list of servers. Default: ${SERVER_LIST}." >&2
-  echo '  -d          Dry run mode. Display the COMMAND that would have been executed and exit.' >&2
-  echo '  -s          Execute the COMMAND using sudo on the remote server.' >&2
-  echo '  -v          Verbose mode. Displays the server name before executing COMMAND.' >&2
-  echo '  -u username Username for ssh' >&2
-  echo "Usage: ${0} -nv -u adm_dbuser -f new_host.lst uptime" >&2
-  echo "Usage: ${0} -nv -u adm_dbuser -f new_host.lst uptime;date" >&2
+  echo "  -f FILE     Use FILE for the list of DBs in format of HOST:PORT/SID
+                      Example: sjdbaodbprdn02:1521/APEXPRD.
+                      Default: ${SERVER_LIST}." >&2
+  echo '  -u username Username to connect DB' >&2
+  echo '  -p password Passowrd to connect DB' >&2
+  echo '  -t tns      TNS Connection string for Inventory DB' >&2
+  echo "Usage: ${0} -u scott -p welcome123 -f tns_entries.lst" >&2
+  echo "Usage: Script to generate Inventory list ${INV_SCRIPT}" >&2
+  echo "Usage: Script to Verify the 11G and below DB open users ${ORA_11G_SCRIPT}" >&2
+  echo "Usage: Script to Verify the 12C and above DB open users ${ORA_11G_SCRIPT}" >&2
   exit 1
 }
+
+#Validate custom input
+# Parse the options.
+while getopts u:p:t:f OPTION
+do
+  case ${OPTION} in
+    f)
+      log 'User provided DB Inventory file processed' 
+      SERVER_LIST="${OPTARG}" ;;
+    u) 
+      log 'User provided DB Username in use'
+      INV_DB_USER="${OPTARG}" ;;
+    p)
+      log 'User provided DB password in use'
+      INV_DB_PASS="${OPTARG}" ;;
+    t) 
+      log 'User provided DB TNS for inventory in use'
+      INV_DB_TNS="${OPTARG}" ;;
+    ?) usage ;;
+  esac
+done
+
+# Remove the options while leaving the remaining arguments.
+shift "$(( OPTIND - 1 ))"
 
 
 archive_file()
@@ -88,10 +115,10 @@ exit;
 EOF
 )
 if [[ $? != 0 ]] ; then
-    echo "Error in Getting DB Inventory" >> $LOG_FILE
-   echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
-   echo "---END">> $LOG_FILE
-   echo "Error"
+  echo "Error in Getting DB Inventory" >> $LOG_FILE
+  echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
+  echo "---END">> $LOG_FILE
+  echo "Error"
 fi
 
 }
@@ -108,11 +135,11 @@ exit;
 EOF
 )
 if [[ $? != 0 ]] ; then
-    echo "Error in Getting DB Version" >> $LOG_FILE
-    echo "$DB_VERSION" >> $LOG_FILE
-   echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
-   echo "---END">> $LOG_FILE
-   echo "Error"
+  echo "Error in Getting DB Version" >> $LOG_FILE
+  echo "$DB_VERSION" >> $LOG_FILE
+  echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
+  echo "---END">> $LOG_FILE
+  echo "Error"
 else
   echo $DB_VERSION
 fi
@@ -127,11 +154,11 @@ exit;
 EOF
 )
 if [[ $? != 0 ]] ; then
-    echo "Error in Getting DB Version" >> $LOG_FILE
-    echo "$OPEN_USERS" >> $LOG_FILE
-    echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
-    echo "---END">> $LOG_FILE
-    echo "Error"
+  echo "Error in Getting DB Version" >> $LOG_FILE
+  echo "$OPEN_USERS" >> $LOG_FILE
+  echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
+  echo "---END">> $LOG_FILE
+  echo "Error"
 else
   echo $OPEN_USERS
 fi
@@ -147,11 +174,11 @@ exit;
 EOF
 )
 if [[ $? != 0 ]] ; then
-    echo "Error in Getting DB Version" >> $LOG_FILE
-    echo "$OPEN_USERS" >> $LOG_FILE
-    echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
-    echo "---END">> $LOG_FILE
-    echo "Error"
+  echo "Error in Getting DB Version" >> $LOG_FILE
+  echo "$OPEN_USERS" >> $LOG_FILE
+  echo "---`date '+%Y%m%d_%H%M%S'`">> $LOG_FILE
+  echo "---END">> $LOG_FILE
+  echo "Error"
 else
   echo $OPEN_USERS
 fi
