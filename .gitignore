@@ -2,3 +2,7 @@ servers.lst*
 .pass.sh
 remote*
 *.log
+*.log
+*.lst
+servers*
+remote_exec.*
