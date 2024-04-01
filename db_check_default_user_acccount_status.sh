@@ -1,5 +1,10 @@
 #!/bin/bash
-#Need sshpass to share the password during runtime
+############################################################################################
+#  Check default Oracle database users account status
+#  Need sshpass (Linux rpm) to share the password during runtime
+#       2024-04-01   Suresh Sundararajan        Initial script
+#                                               -force in enable to pass the warning message
+############################################################################################
 # A list of servers, one per line.
 SERVER_LIST='servers.lst'
 INV_SCRIPT='db_get_inventory.sql'
