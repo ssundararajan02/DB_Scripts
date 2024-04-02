@@ -23,7 +23,7 @@ ORA_11G_SCRIPT='ORA_11G.sql'
 ORA_12C_SCRIPT='ORA_12C.sql'
 #INV_DB_PASS='' # Password set it Unix env vairable based on script .pass.sh
 source .pass.sh
-source /root/.ora12 # Using oracle instant client
+# source /root/.ora12 # Using oracle instant client
 usage() {
   # Display the usage and exit.
   echo "Usage: ${0}  [-f FILE] [-u username] [-p password] [-t TNS_STRING]" >&2
