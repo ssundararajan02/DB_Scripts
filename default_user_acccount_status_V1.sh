@@ -1,14 +1,14 @@
 #!/bin/bash
 ############################################################################################
 #  Check default Oracle database users account status
-#  Using SQL client/Instant client from WSL
+#  Using oracle client from Linux server
 #       2024-04-01   Suresh Sundararajan        Initial script
 #                                               -force in enable to pass the warning message
 ############################################################################################
 # A list of servers, one per line.
 file=$( echo ${0##*/} ); # echo ${file}
 base=${file%.*}; # echo ${base}
-SCRIPT_DIR='/Git/DB_Scripts'
+SCRIPT_DIR='/home/oracle/scripts'
 SERVER_LIST='servers.lst'
 INV_SCRIPT='db_get_inventory.sql'
 TEMP_INV_SCRIPT='temp_inventory.sql'
@@ -196,7 +196,8 @@ fi
 #Main
 #Get the PROD DB inventory
 #Setting sqlplu location
-ORA_BIN=${ORACLE_HOME}
+# ORA_BIN=${ORACLE_HOME}
+ORA_BIN="${ORACLE_HOME}/bin"
 log '---Start'
 log '---Getting Inventory'
 get_inventory
@@ -232,5 +233,3 @@ cat $SERVER_LIST | while read HOST; do
     fi
 done
 log 'End'
-
-
