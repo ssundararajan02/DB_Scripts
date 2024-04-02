@@ -115,17 +115,17 @@ get_inventory()
 {
 DB_INV=$($ORA_BIN/sqlplus -s  "$INV_DB_CONN" << EOF
 spool $SERVER_LIST
---@$INV_SCRIPT
-@$TEMP_INV_SCRIPT
+@$INV_SCRIPT
+--@$TEMP_INV_SCRIPT
 
 exit;
 EOF
 )
 if [[ $? != 0 ]] ; then
-  log "Error in Getting DB Inventory" 
+  log "---Error in Getting DB Inventory" 
   log "---`date '+%Y%m%d_%H%M%S'`"
   log "---END"
-  log "Error"
+  echo "Error"
 fi
 
 }
@@ -142,10 +142,10 @@ exit;
 EOF
 )
 if [[ $? != 0 ]] ; then
-  echo "Error in Getting DB Version" >> ${LOG_FILE}
-  echo "$DB_VERSION" >> ${LOG_FILE}
-  echo "---`date '+%Y%m%d_%H%M%S'`">> ${LOG_FILE}
-  echo "---END">> ${LOG_FILE}
+  log "---Error in Getting DB Version" 
+  log "$DB_VERSION" 
+  log "---`date '+%Y%m%d_%H%M%S'`"
+  log "---END"
   echo "Error"
 else
   echo $DB_VERSION
@@ -161,10 +161,10 @@ exit;
 EOF
 )
 if [[ $? != 0 ]] ; then
-  echo "Error in Getting DB Version" >> ${LOG_FILE}
-  echo "$OPEN_USERS" >> ${LOG_FILE}
-  echo "---`date '+%Y%m%d_%H%M%S'`">> ${LOG_FILE}
-  echo "---END">> ${LOG_FILE}
+  log "---Error in Getting Open users" 
+  log "$OPEN_USERS" 
+  log "---`date '+%Y%m%d_%H%M%S'`"
+  log "---END"
   echo "Error"
 else
   echo $OPEN_USERS
@@ -181,10 +181,10 @@ exit;
 EOF
 )
 if [[ $? != 0 ]] ; then
-  echo "Error in Getting DB Version" >> ${LOG_FILE}
-  echo "$OPEN_USERS" >> $LOG_FILE
-  echo "---`date '+%Y%m%d_%H%M%S'`">> ${LOG_FILE}
-  echo "---END">> ${LOG_FILE}
+  log "---Error in Getting Open Users"
+  log "$OPEN_USERS"
+  log "---`date '+%Y%m%d_%H%M%S'`"
+  log "---END"
   echo "Error"
 else
   echo $OPEN_USERS
@@ -197,33 +197,40 @@ fi
 #Get the PROD DB inventory
 #Setting sqlplu location
 ORA_BIN=${ORACLE_HOME}
+log '---Start'
+log '---Getting Inventory'
 get_inventory
-
+log '---Inventory collected'
 cat $SERVER_LIST | while read HOST; do
     TEMP_DB_TNS=$(echo $HOST|awk '{print $1":"$3"/"$2}')
     TEMP_DB_CONN="$INV_DB_USER/$INV_DB_PASS@$TEMP_DB_TNS"
     DB_VERSION=$(get_db_version)
+    echo "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION" >> ${DB_LIST}
     if [[ "$DB_VERSION"  != 'Error' ]]; then 
-      echo "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION" >> ${DB_LIST}
+      log "---$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION"
       if [[ $(echo  "$DB_VERSION"|awk -F. '{print $1}') > 11 ]]; then
-        echo 'Oracle 12C and Above' 
+        log '---Oracle 12C and Above' 
         OPEN_USERS=$(12c_open_users)
       else
-        echo 'Oracle 11G and below' 
+        log '---Oracle 11G and below'
         OPEN_USERS=$(11g_open_users)
       fi
       #Write open users to logfile
       #echo -e "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION | $OPEN_USERS" >> ${LOG_FILE}
-      echo -e "${OPEN_USERS}" >> ${LOG_FILE}
+      # log "\n${OPEN_USERS}" 
       if [[ ! -z "${OPEN_USERS}" ]]; then
         #echo -e "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION | $OPEN_USERS" >> ${RESULT_FILE}
-        echo -e "${OPEN_USERS}" >> ${RESULT_FILE}
+        echo -e "${OPEN_USERS}"|tr -d ' ' >> ${RESULT_FILE}
+        log "--List of Open users\n"
+        log "${OPEN_USERS}"
+      else
+        log "--No Open users"
       fi
     else
       #Error in Getting result
-      echo "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION" >> ${LOG_FILE}
+      log "$(echo $HOST|awk '{print $1" | "$2}') | $DB_VERSION"
     fi
-
 done
+log 'End'
 
 
