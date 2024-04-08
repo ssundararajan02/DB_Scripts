@@ -6,3 +6,4 @@ remote*
 *.lst
 servers*
 remote_exec.*
+*.log.*

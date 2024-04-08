@@ -16,7 +16,7 @@ DT="$(date +%Y%m%d.%H%M%S)"
 LOG_FILE="${SCRIPT_DIR}/out_${base}.log"
 RESULT_FILE="${SCRIPT_DIR}/result_${base}.log"
 DB_LIST="${SCRIPT_DIR}/dblist_${base}.log"
-
+GET_INV='Y'
 INV_DB_TNS='sjdbaodbprdn02.na.gilead.com:1521/APEXPRD'
 INV_DB_USER='GSCTCCS_SVC'
 ORA_11G_SCRIPT='ORA_11G.sql'
@@ -41,14 +41,33 @@ usage() {
   exit 1
 }
 
+
+#Write message to logfile
+log()
+{
+  DT="$(date +%Y%m%d.%H%M%S.%N)"
+  local MESSAGE="${*}"
+  echo -e "${DT}.${MESSAGE}" >> "${LOG_FILE}"
+}
+
+#Write message to Error file
+erorr_mesg()
+{
+  DT="$(date +%Y%m%d.%H%M%S.%N)"
+  local MESSAGE="${*}"
+  echo -e "${DT}.${MESSAGE}" >> "${LOG_FILE}"
+}
+
+log '---Start'
 #Validate custom input
 # Parse the options.
-while getopts u:p:t:f OPTION
+while getopts f:u:p:t: OPTION
 do
   case ${OPTION} in
     f)
       log 'User provided DB Inventory file processed' 
-      SERVER_LIST="${OPTARG}" ;;
+      SERVER_LIST=${OPTARG}
+      GET_INV='N' ;;
     u) 
       log 'User provided DB Username in use'
       INV_DB_USER="${OPTARG}" ;;
@@ -92,21 +111,6 @@ archive_file "${LOG_FILE}"
 archive_file "${RESULT_FILE}"
 archive_file "${DB_LIST}"
 
-#Write message to logfile
-log()
-{
-  DT="$(date +%Y%m%d.%H%M%S.%N)"
-  local MESSAGE="${*}"
-  echo -e "${DT}.${MESSAGE}" >> "${LOG_FILE}"
-}
-
-#Write message to Error file
-erorr_mesg()
-{
-  DT="$(date +%Y%m%d.%H%M%S.%N)"
-  local MESSAGE="${*}"
-  echo -e "${DT}.${MESSAGE}" >> "${LOG_FILE}"
-}
 
 INV_DB_CONN="$INV_DB_USER/$INV_DB_PASS@$INV_DB_TNS"
 echo $INV_DB_CONN
@@ -197,10 +201,12 @@ fi
 #Get the PROD DB inventory
 #Setting sqlplu location
 ORA_BIN=${ORACLE_HOME}
-log '---Start'
-log '---Getting Inventory'
-get_inventory
-log '---Inventory collected'
+if [[ "$GET_INV"  == 'Y' ]]; then
+  log '---Getting Inventory'
+  get_inventory
+  log '---Inventory collected'
+fi
+
 cat $SERVER_LIST | while read HOST; do
     TEMP_DB_TNS=$(echo $HOST|awk '{print $1":"$3"/"$2}')
     TEMP_DB_CONN="$INV_DB_USER/$INV_DB_PASS@$TEMP_DB_TNS"
